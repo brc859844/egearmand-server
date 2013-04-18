@@ -10,10 +10,13 @@
 
 -include_lib("states.hrl").
 -include_lib("rabbit_states.hrl").
--include_lib("rabbitmq_erlang_client/include/amqp_client.hrl").
+%% -include_lib("rabbitmq_erlang_client/include/amqp_client.hrl").
+%% BRC
+-include("amqp_client/include/amqp_client.hrl").
 
 -export([start/0, start_link/0, create_queue/1, publish/3, consume/2]) .
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
+-export([code_change/3]).	%% BRC
 
 
 %% public API
@@ -53,11 +56,24 @@ consume(F,Queue) ->
 
 
 init(_Arguments) ->
-    Params = #amqp_params{ username = configuration:rabbit_user(),
-                           password = configuration:rabbit_password() },
-    ConnectionPid = amqp_connection:start_direct(Params),
-    {Channel, Ticket} = channel_setup(ConnectionPid),
-    { ok, #rabbit_queue_state{ connection = ConnectionPid, channel = Channel, ticket = Ticket } } .
+%%    Params = #amqp_params{ username = configuration:rabbit_user(),
+%%                           password = configuration:rabbit_password() },
+%%    ConnectionPid = amqp_connection:start_direct(Params),
+%% BRC
+    Params = #amqp_params_network{ username = configuration:rabbit_user(),
+			           password = configuration:rabbit_password() },
+    {ok, Connection} = amqp_connection:start(Params),
+    {ok, Channel} = amqp_connection:open_channel(Connection),
+    {ok, #rabbit_queue_state{ connection = Connection, channel = Channel, ticket = Channel } } .
+%%    {Channel, Ticket} = channel_setup(ConnectionPid),
+%%    { ok, #rabbit_queue_state{ connection = ConnectionPid, channel = Channel, ticket = Ticket } } .
+
+
+%% BRC
+code_change(_OldVsn, State, _Extra) ->
+    %% No change planned. The function is there for the behaviour,
+    %% but will not be used.
+    {ok, State}.
 
 
 handle_call({create, Options}, _From, State) ->
@@ -106,7 +122,9 @@ handle_cast(_Msg, State) ->
 handle_info(_Msg, State) ->
     {noreply, State}.
 
-terminate(shutdown, #connections_state{ socket = ServerSock }) ->
+%% BRC
+%% terminate(shutdown, #connections_state{ socket = ServerSock }) ->
+terminate(shutdown, #connections_state{ socket = _ServerSock }) ->
     ok.
 
 
@@ -161,20 +179,42 @@ declare_queue(Options, State) ->
     Q = proplists:get_value(name, Options),
     X = <<"x">>,
     BindKey = proplists:get_value(routing_key, Options),
-    QueueDeclare = #'queue.declare'{ticket = State#rabbit_queue_state.ticket,
-                                    queue = Q,
+
+%% BRC
+%%    QueueDeclare = #'queue.declare'{ticket = State#rabbit_queue_state.ticket,
+%%                                    queue = Q,
+%%                                    passive = false,
+%%                                    durable = false,
+%%                                    exclusive = false,
+%%                                    auto_delete = false,
+%%                                    nowait = false,
+%%                                    arguments = []},
+%%    #'queue.declare_ok'{queue = Q,
+%%                        message_count = _MessageCount,
+%%                        consumer_count = _ConsumerCount}  = amqp_channel:call(State#rabbit_queue_state.channel, QueueDeclare),
+
+    QueueDeclare = #'queue.declare'{queue = Q,
                                     passive = false,
                                     durable = false,
                                     exclusive = false,
                                     auto_delete = false,
                                     nowait = false,
                                     arguments = []},
-    #'queue.declare_ok'{queue = Q,
-                        message_count = _MessageCount,
-                        consumer_count = _ConsumerCount}  = amqp_channel:call(State#rabbit_queue_state.channel, QueueDeclare),
+    #'queue.declare_ok'{} = amqp_channel:call(State#rabbit_queue_state.channel, QueueDeclare),
 
-    ExchangeDeclare = #'exchange.declare'{ticket = State#rabbit_queue_state.ticket,
-                                          exchange = X,
+%% BRC
+%%    ExchangeDeclare = #'exchange.declare'{ticket = State#rabbit_queue_state.ticket,
+%%                                          exchange = X,
+%%                                          type= <<"direct">>,
+%%                                          passive = false,
+%%                                          durable = false,
+%%                                          auto_delete=false,
+%%                                          internal = false,
+%%                                          nowait = false,
+%%                                          arguments = []},
+
+    ExchangeDeclare = #'exchange.declare'{exchange = X,
+					  ticket = 0,
                                           type= <<"direct">>,
                                           passive = false,
                                           durable = false,
@@ -185,12 +225,17 @@ declare_queue(Options, State) ->
 
     #'exchange.declare_ok'{} = amqp_channel:call(State#rabbit_queue_state.channel, ExchangeDeclare),
 
-    QueueBind = #'queue.bind'{ticket = State#rabbit_queue_state.ticket,
-                              queue = Q,
+%% BRC
+%%    QueueBind = #'queue.bind'{ticket = State#rabbit_queue_state.ticket,
+%%                              queue = Q,
+%%                              exchange = X,
+%%                              routing_key = BindKey,
+%%                              nowait = false,
+%%                              arguments = []},
+
+    QueueBind = #'queue.bind'{queue = Q,
                               exchange = X,
-                              routing_key = BindKey,
-                              nowait = false,
-                              arguments = []},
+                              routing_key = BindKey},
 
     #'queue.bind_ok'{} = amqp_channel:call(State#rabbit_queue_state.channel, QueueBind),
     {Q, #rabbit_queue{ queue = Q, exchange = X, key = BindKey }} .
@@ -203,18 +248,34 @@ publish_content(Content, Queue, BindingKey, State) ->
                {ticket, State#rabbit_queue_state.ticket},
                {exchange, QueueState#rabbit_queue.exchange},
                {routing_key, BindingKey}]),
-    BasicPublish = #'basic.publish'{ticket = State#rabbit_queue_state.ticket,
-                                    exchange = QueueState#rabbit_queue.exchange,
-                                    routing_key = BindingKey,
-                                    mandatory = false,
-                                    immediate = false},
+%% BRC
+%%    BasicPublish = #'basic.publish'{ticket = State#rabbit_queue_state.ticket,
+%%                                    exchange = QueueState#rabbit_queue.exchange,
+%%                                    routing_key = BindingKey,
+%%                                    mandatory = false,
+%%                                    immediate = false},
+%%    amqp_channel:call(State#rabbit_queue_state.channel, BasicPublish, Payload) .
+    BasicPublish = #'basic.publish'{exchange = QueueState#rabbit_queue.exchange,
+                                    routing_key = BindingKey},
     Payload = #amqp_msg{payload = list_to_binary([Content])},
-    amqp_channel:call(State#rabbit_queue_state.channel, BasicPublish, Payload) .
+    amqp_channel:cast(State#rabbit_queue_state.channel, BasicPublish, Payload) .
 
 
 register_consumer(Function, Queue, State) ->
-    BasicConsume = #'basic.consume'{ticket = State#rabbit_queue_state.ticket,
-                                    queue = Queue,
+%% BRC
+%%    BasicConsume = #'basic.consume'{ticket = State#rabbit_queue_state.ticket,
+%%                                    queue = Queue,
+%%                                    consumer_tag = <<"">>,
+%%                                    no_local = false,
+%%                                    no_ack = true,
+%%                                    exclusive = false,
+%%                                    nowait = false},
+%%
+%%    ConsumerPid = spawn_consumer(Function, State#rabbit_queue_state.channel),
+%%
+%%    amqp_channel:subscribe(State#rabbit_queue_state.channel, BasicConsume, ConsumerPid),
+
+    BasicConsume = #'basic.consume'{queue = Queue,
                                     consumer_tag = <<"">>,
                                     no_local = false,
                                     no_ack = true,
@@ -223,7 +284,7 @@ register_consumer(Function, Queue, State) ->
 
     ConsumerPid = spawn_consumer(Function, State#rabbit_queue_state.channel),
 
-    amqp_channel:subscribe(State#rabbit_queue_state.channel, BasicConsume, ConsumerPid),
+    #'basic.consume_ok'{consumer_tag = Tag} = amqp_channel:subscribe(State#rabbit_queue_state.channel, BasicConsume, ConsumerPid),
 
     ConsumerPid .
 
@@ -265,9 +326,13 @@ spawn_consumer(Function, Channel) ->
 
 direct_queue_test() ->
     %% first get the connection
-    Params = #amqp_params{ username = <<"guest">>,
-                           password = <<"guest">> },
-    ConnectionPid = amqp_connection:start_direct(Params),
+%%    Params = #amqp_params{ username = <<"guest">>,
+%%                           password = <<"guest">> },
+%%    ConnectionPid = amqp_connection:start_direct(Params),
+%% BRC
+    Params = #amqp_params_network{ username = <<"zaphod">>,
+                                   password = <<"zaphod">> },
+    ConnectionPid = amqp_connection:start(Params),
 
     %% Get a channel
     Access = #'access.request'{ realm = <<"gearman">>,

@@ -14,6 +14,7 @@
 -export([start_link/0, submit_job/5, lookup_job/1, reeschedule_job/1, check_option_for_job/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, update_job_options/2]).
 -export([submit_job_from_client_proxy/5]) .
+-export([code_change/3]).
 
 
 %% Public API
@@ -95,6 +96,13 @@ check_option_for_job(Option, JobRequest) ->
 
 
 init(State) ->
+    {ok, State}.
+
+
+%% BRC
+code_change(_OldVsn, State, _Extra) ->
+    %% No change planned. The function is there for the behaviour,
+    %% but will not be used.
     {ok, State}.
 
 

@@ -13,6 +13,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, register_function/2, unregister_from_function/2, unregister_from_function_multi/2, workers_for_function/1]) .
+-export([code_change/3]).
 
 
 %% Public API
@@ -54,6 +55,13 @@ workers_for_function(FunctionName) ->
 
 init(State) ->
     {ok, State} .
+
+
+%% BRC
+code_change(_OldVsn, State, _Extra) ->
+    %% No change planned. The function is there for the behaviour,
+    %% but will not be used.
+    {ok, State}.
 
 
 handle_call({register, Ref, FunctionName}, _From, _Store) ->

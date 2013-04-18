@@ -13,13 +13,17 @@
 %% @doc
 %% The RabbitMQ user
 rabbit_user() ->
-    <<"guest">> .
+    <<"zaphod">>.
+%% BRC
+%%    <<"guest">> .
 
 
 %% @doc
 %% The RabbitMQ password
 rabbit_password() ->
-    <<"guest">> .
+    <<"zaphod">>.
+%% BRC
+%%    <<"guest">> .
 
 
 %% @doc
@@ -83,4 +87,5 @@ persistent_queues() -> false .
 %% The list of installed extensions
 -spec(extensions() -> [atom()]) .
 extensions() ->
-    [] . % [ rabbitmq_extension ] .
+    [ rabbitmq_extension ] .
+%%  [].

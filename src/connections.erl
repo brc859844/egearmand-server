@@ -9,6 +9,7 @@
 
 -export([start_link/1, start_link/2, close_connection/0, check_worker_proxy_for/2, do_recv/1, do_recv/2, server_socket_process/2, process_connection/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
+-export([code_change/3]).
 
 %% Public API
 
@@ -31,6 +32,11 @@ check_worker_proxy_for(Ref,Socket) ->
 
 %% Callbacks
 
+%% BRC
+code_change(_OldVsn, State, _Extra) ->
+    %% No change planned. The function is there for the behaviour,
+    %% but will not be used.
+    {ok, State}.
 
 init(#connections_state{ configuration = Configuration} = State) ->
     {ok,Ip} = inet:getaddr(proplists:get_value(host,Configuration),inet),

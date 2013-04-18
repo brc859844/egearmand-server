@@ -14,10 +14,9 @@
 
 -export([start_link/2, gearman_message/3, cast_gearman_message/3, worker_process_connection/3, error_in_worker/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, worker_disconnection/2]).
-
+-export([code_change/3]).	%% BRC
 
 %% Public API
-
 
 %% @doc
 %% Creates the worker proxy from a given worker identifier and worker socket.
@@ -61,6 +60,13 @@ init(#worker_proxy_state{ identifier = Id, socket = WorkerSocket} = State) ->
     % notifying the proxy with requests
     spawn(worker_proxy, worker_process_connection, [Id, WorkerSocket, true]),
     {ok, State} .
+
+
+%% BRC
+code_change(_OldVsn, State, _Extra) ->
+    %% No change planned. The function is there for the behaviour,
+    %% but will not be used. 
+    {ok, State}.
 
 
 handle_call({set_client_id, WorkerId}, _From, State) ->
