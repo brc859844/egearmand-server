@@ -2,7 +2,7 @@ require 'rubygems'
 require 'gearman'
 require 'json'
 
-Gearman::Util.debug = true
+# Gearman::Util.debug = true
 
 servers = ['localhost:4730']
 
