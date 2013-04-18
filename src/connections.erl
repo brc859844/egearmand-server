@@ -32,7 +32,6 @@ check_worker_proxy_for(Ref,Socket) ->
 
 %% Callbacks
 
-%% BRC
 code_change(_OldVsn, State, _Extra) ->
     %% No change planned. The function is there for the behaviour,
     %% but will not be used.
