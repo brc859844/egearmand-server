@@ -13,7 +13,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, register_worker_proxy/1, unregister_worker_proxy/1, update_worker_current/2, worker_functions/0]) .
 -export([add_worker_function/2, remove_worker_function/2, update_worker_id/2, check_worker_for_job/1, check_handle_for_worker/1]).
--export([code_change/3]). 	%% BRC
+-export([code_change/3]). 
 
 
 %% Public API
@@ -83,7 +83,7 @@ worker_functions() ->
 
 code_change(_OldVsn, State, _Extra) ->
     %% No change planned. The function is there for the behaviour,
-    %% but will not be used (BRC).
+    %% but will not be used.
     {ok, State}.
 
 

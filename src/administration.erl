@@ -13,7 +13,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, status/0, workers/0, version/0]) .
--export([code_change/3]).	%% BRC
+-export([code_change/3]).
 
 
 %% Public API
@@ -49,7 +49,6 @@ init(State) ->
     {ok, State} .
 
 
-%% BRC
 code_change(_OldVsn, State, _Extra) ->
     %% No change planned. The function is there for the behaviour,
     %% but will not be used.

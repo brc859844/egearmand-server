@@ -7,13 +7,10 @@
 
 -behaviour(gen_server) .
 
-%% BRC
-%% -import(io).
-
 -export([t/1,p/1,error/1, info/1, warning/1, debug/1, ot/1, timestamp/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/1, msg/2]).
--export([code_change/3]). 	%% BRC
+-export([code_change/3]). 
 
 %% Public API
 
@@ -79,8 +76,6 @@ msg(Level, Msg) ->
 
 %% Callbacks
 
-
-%% BRC
 code_change(_OldVsn, State, _Extra) ->
     %% No change planned. The function is there for the behaviour,
     %% but will not be used.
