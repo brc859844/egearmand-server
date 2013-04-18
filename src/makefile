@@ -1,7 +1,5 @@
 INC = -I$(HOME)
-
 OPT = -Wall -pa $(HOME)/rabbitmq-server/ebin
-
 APP = egearmand.app
 
 BEAMS = administration.beam \

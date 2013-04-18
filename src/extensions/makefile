@@ -1,7 +1,5 @@
 INC = -I$(HOME) -I. -I..
-
 OPT = -Wall -pa $(HOME)/rabbitmq-server/ebin
-
 BEAMS = rabbitmq_extension.beam rabbit_backend.beam
 
 
