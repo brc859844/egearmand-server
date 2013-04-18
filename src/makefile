@@ -29,7 +29,10 @@ workers_registry.beam
 .erl.beam:
 		erlc $(OPT) $(INC) $<
 
-all:            $(BEAMS) app move rabbit
+all:            $(BEAMS) ebin app move rabbit
+
+ebin: 		
+		mkdir -p ../ebin
 
 rabbit:
 		(cd extensions; make)

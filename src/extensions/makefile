@@ -10,7 +10,10 @@ BEAMS = rabbitmq_extension.beam rabbit_backend.beam
 .erl.beam:
 		erlc $(OPT) $(INC) $<
 
-all:            $(BEAMS) move
+all:            $(BEAMS) ebin move
+
+ebin: 
+		mkdir -p ../../ebin
 
 move:           $(BEAMS)
 		mv $(BEAMS) ../../ebin/
