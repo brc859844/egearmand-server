@@ -13,17 +13,13 @@
 %% @doc
 %% The RabbitMQ user
 rabbit_user() ->
-    <<"zaphod">>.
-%% BRC
-%%    <<"guest">> .
+    <<"guest">> .
 
 
 %% @doc
 %% The RabbitMQ password
 rabbit_password() ->
-    <<"zaphod">>.
-%% BRC
-%%    <<"guest">> .
+    <<"guest">> .
 
 
 %% @doc
